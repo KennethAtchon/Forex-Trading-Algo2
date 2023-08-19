@@ -216,7 +216,9 @@ oanda.setCurrentAccount('101-001-24797201-001')
 timeframe = "M1"
 
 # what pair are you trading 
-instrument = "EUR_USD"
+instrument = "USD_JPY"
+
+length = 10
 
 while(True):
 
@@ -228,14 +230,14 @@ while(True):
         print("Get in there beelzebob")
         # get moving average
         #15m is timeframe of ma
-        candleMA = oanda.getCandles("M15", 10 ,instrument)
+        candleMA = oanda.getCandles("M15", length ,instrument)
 
         sum = 0.0
         
-        for i in range(10):
+        for i in range(length):
             holder = float(candleMA['candles'][i]['mid']['c'])
             sum += holder
-        movingaverage = sum / 10
+        movingaverage = sum / length
         movingaverage = round(movingaverage, 5)
 
         # most recent price
@@ -247,32 +249,38 @@ while(True):
         # check if recent price is above or below moving average then buy/sell
 
         if recentcandleprice >= movingaverage:
-            buyorder = oanda.placeBuyOrder(instrument, 100, -1,-1)
+            buyorder = oanda.placeBuyOrder(instrument, 50000, -1,-1)
             buyprice = float(buyorder['orderFillTransaction']['price'])
             buytradeid = buyorder['orderFillTransaction']['tradeOpened']['tradeID']
             
             # take profit price as relates to buy price , 0.0004 = 4 pips
-            takeprofit = buyprice + 0.00041
+            takeprofit = buyprice + 0.20
             # sl
-            stoploss = buyprice - 0.00041
+            stoploss = buyprice - 0.10
 
-            takeprofit = round(takeprofit, 5)
-            stoploss = round(stoploss, 5)
+            # takeprofit = round(takeprofit, 5)
+            # stoploss = round(stoploss, 5)
             
+            takeprofit = round(takeprofit, 2)
+            stoploss = round(stoploss, 2)
+
             oanda.placetpOrsl(takeprofit , "TAKE_PROFIT", buytradeid)
             oanda.placetpOrsl(stoploss, "STOP_LOSS", buytradeid)
         else:
-            sellorder = oanda.placeSellOrder(instrument, 100, -1, -1)
+            sellorder = oanda.placeSellOrder(instrument, 50000, -1, -1)
             sellprice = float(sellorder['orderFillTransaction']['price'])
             selltradeid = sellorder['orderFillTransaction']['tradeOpened']['tradeID']
 
             # take profit price as relates to buy price , 0.0004 = 4 pips
-            takeprofit = sellprice - 0.0006
+            # Jap pairs are 0.04 = 4 pips
+            takeprofit = sellprice - 0.20
             # sl
-            stoploss = sellprice + 0.0004
+            stoploss = sellprice + 0.10
 
-            takeprofit = round(takeprofit, 5)
-            stoploss = round(stoploss, 5)
+            # takeprofit = round(takeprofit, 5)
+            # stoploss = round(stoploss, 5)
+            takeprofit = round(takeprofit, 2)
+            stoploss = round(stoploss, 2)
             
             oanda.placetpOrsl(takeprofit , "TAKE_PROFIT", selltradeid)
             oanda.placetpOrsl(stoploss, "STOP_LOSS", selltradeid)
@@ -280,8 +288,6 @@ while(True):
 
 
         time.sleep(10)
-
-        
 
     else:
 
