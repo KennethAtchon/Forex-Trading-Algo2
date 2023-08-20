@@ -201,7 +201,7 @@ if __name__ == "__main__":
     )
 
     cerebro.adddata(data)
-    cerebro.addstrategy(SMAStrategy)
+    cerebro.addstrategy(MovingAverageRibbonStrategy)
     cerebro.run()
     cerebro.plot()
 
