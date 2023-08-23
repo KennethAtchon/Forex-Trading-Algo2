@@ -3,6 +3,29 @@ import json
 import os
 import time
 from dotenv import load_dotenv
+import pandas as pd
+import pandas_ta as ta
+
+def adx_strategy(high, low, close, adx_period=14, adx_threshold=25):
+    df = pd.DataFrame({'high': high, 'low': low, 'close': close})
+    
+    
+    # Calculate ADX and other indicators using pandas_ta
+    df['ADX'] = ta.adx(df['high'], df['low'], df['close'], length=adx_period)
+    df['PLUS_DI'] = ta.plus_di(df['high'], df['low'], df['close'], length=adx_period)
+    df['MINUS_DI'] = ta.minus_di(df['high'], df['low'], df['close'], length=adx_period)
+    
+    # Determine the buy/sell signal based on ADX and DI values
+    df['buy_signal'] = (df['ADX'] > adx_threshold) & (df['PLUS_DI'] > df['MINUS_DI'])
+    df['sell_signal'] = ~df['buy_signal']
+    
+    return df[['buy_signal', 'sell_signal']]
+
+
+
+# signals = adx_strategy(high_values, low_values, close_values)
+# print(signals)
+
 
 load_dotenv()
 
@@ -218,7 +241,7 @@ timeframe = "M1"
 # what pair are you trading 
 instrument = "USD_JPY"
 
-period = 15
+period = 14
 
 while(True):
 
@@ -231,54 +254,15 @@ while(True):
         #15m is timeframe of ma
         candles = oanda.getCandles("M15", period ,instrument)
 
-        dm_plus_values = []
-        tr_values = []
-
-        for i in range(1,period):
-            
-
-            high = float(candles['candles'][i]['mid']['h'])
-            low = float(candles['candles'][i]['mid']['l'])
-            close = float(candles['candles'][i]['mid']['c'])
- 
-
-            dm_plus = max(high - float(candles['candles'][i - 1]['mid']['h']), 0) 
-            dm_plus_values.append(dm_plus)
-
-            tr = max(high - low, abs(high - float(candles['candles'][i - 1]['mid']['c'])), abs(low - float(candles['candles'][i - 1]['mid']['c'])))
-            tr_values.append(tr)
-        
-        
-        smoothed_dm_plus = sum(dm_plus_values)
-        print(dm_plus_values)
-        smoothed_tr = sum(tr_values)
-
-        smoothed_dm_values = []
-        smoothed_tr_values = []
-        positive_directional_index = []
-
-        for i in range(len(dm_plus_values)):
-            smoothed_dm_values.append(
-                smoothed_dm_plus - (smoothed_dm_plus / 14) + dm_plus_values[i]
-            )
-
-            smoothed_tr_values.append(
-                smoothed_tr - (smoothed_tr / 14) + tr_values[i]
-            )
-            
-            positive_directional_index.append(
-                100 * (smoothed_dm_values[i] / smoothed_tr_values[i]) 
-            )
-
-        print("The +DI is :" + str(positive_directional_index))
+        high_values = [candle['mid']['h'] for candle in candles['candles']]  # List of high values for each candle
+        low_values = [candle['mid']['l'] for candle in candles['candles']]   # List of low values for each candle
+        close_values = [candle['mid']['c'] for candle in candles['candles']] # List of close values for each candle
 
         
+        signals = adx_strategy(high_values, low_values, close_values)
+        print(signals)
 
 
-
-
-
-        
 
         # if candles:
         #     buyorder = oanda.placeBuyOrder(instrument, 50000, -1,-1)
@@ -332,3 +316,45 @@ while(True):
 
 
 
+
+## CODE GARBAGE
+# dm_plus_values = []
+#         tr_values = []
+
+#         for i in range(1,period):
+            
+
+#             high = float(candles['candles'][i]['mid']['h'])
+#             low = float(candles['candles'][i]['mid']['l'])
+#             close = float(candles['candles'][i]['mid']['c'])
+ 
+
+#             dm_plus = max(high - float(candles['candles'][i - 1]['mid']['h']), 0) 
+#             dm_plus_values.append(dm_plus)
+
+#             tr = max(high - low, abs(high - float(candles['candles'][i - 1]['mid']['c'])), abs(low - float(candles['candles'][i - 1]['mid']['c'])))
+#             tr_values.append(tr)
+        
+        
+#         smoothed_dm_plus = sum(dm_plus_values)
+#         print(dm_plus_values)
+#         smoothed_tr = sum(tr_values)
+
+#         smoothed_dm_values = []
+#         smoothed_tr_values = []
+#         positive_directional_index = []
+
+#         for i in range(len(dm_plus_values)):
+#             smoothed_dm_values.append(
+#                 smoothed_dm_plus - (smoothed_dm_plus / 14) + dm_plus_values[i]
+#             )
+
+#             smoothed_tr_values.append(
+#                 smoothed_tr - (smoothed_tr / 14) + tr_values[i]
+#             )
+            
+#             positive_directional_index.append(
+#                 100 * (smoothed_dm_values[i] / smoothed_tr_values[i]) 
+#             )
+
+#         print("The +DI is :" + str(positive_directional_index))

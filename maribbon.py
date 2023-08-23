@@ -256,9 +256,9 @@ while(True):
             buytradeid = buyorder['orderFillTransaction']['tradeOpened']['tradeID']
             
             # take profit price as relates to buy price , 0.0004 = 4 pips
-            takeprofit = buyprice + 0.20
+            takeprofit = buyprice + 0.15
             # sl
-            stoploss = buyprice - 0.10
+            stoploss = buyprice - 0.05
 
             # takeprofit = round(takeprofit, 5)
             # stoploss = round(stoploss, 5)
@@ -275,9 +275,9 @@ while(True):
 
             # take profit price as relates to buy price , 0.0004 = 4 pips
             # Jap pairs are 0.04 = 4 pips
-            takeprofit = sellprice - 0.20
+            takeprofit = sellprice - 0.15
             # sl
-            stoploss = sellprice + 0.10
+            stoploss = sellprice + 0.05
 
             # takeprofit = round(takeprofit, 5)
             # stoploss = round(stoploss, 5)

@@ -191,17 +191,26 @@ class MovingAverageRibbonStrategy(bt.Strategy):
 if __name__ == "__main__":
     cerebro = bt.Cerebro()
 
+    # data = bt.feeds.GenericCSVData(
+    #     dataname="C:\\Users\\kenne\\Pictures\\All\\python\\forex\\Forex-Trading-Algo2\\DAT_XLSX_EURUSD_M1_2020.csv",  # Replace with the actual file path
+    #     fromdate=datetime.datetime(2020, 1, 1),
+    #     todate=datetime.datetime(2021, 1, 1),
+    #     dtformat=('%Y-%m-%d %H:%M'),
+    #     datetime=0,
+    #     openinterest=-1
+    # )
+
     data = bt.feeds.GenericCSVData(
-        dataname="C:\\Users\\kenne\\Pictures\\All\\python\\forex\\Forex-Trading-Algo2\\DAT_XLSX_EURUSD_M1_2020.csv",  # Replace with the actual file path
+        dataname="C:\\Users\\kenne\\Pictures\\All\\python\\forex\\Forex-Trading-Algo2\\DAT_XLSX_USDJPY_M1_2020.csv",  # Replace with the actual file path
         fromdate=datetime.datetime(2020, 1, 1),
-        todate=datetime.datetime(2021, 1, 1),
+        todate=datetime.datetime(2020, 6, 1),
         dtformat=('%Y-%m-%d %H:%M'),
         datetime=0,
         openinterest=-1
     )
 
     cerebro.adddata(data)
-    cerebro.addstrategy(MovingAverageRibbonStrategy)
+    cerebro.addstrategy(IchimokuStrategy)
     cerebro.run()
     cerebro.plot()
 
