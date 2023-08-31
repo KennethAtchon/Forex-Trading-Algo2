@@ -15,7 +15,8 @@ class SMACrossoverStrategy(bt.Strategy):
 
     def next(self):
         if self.crossover > 0:
-            self.buy()
+            
+            print(self.buy())
         elif self.crossover < 0:
             self.sell()
 
@@ -147,6 +148,7 @@ class IchimokuStrategy(bt.Strategy):
              self.data.close[0] < self.ichimoku.lines.senkou_span_b[0]:
             self.sell()
 
+
 # Triple Moving Average Crossover
 class TripleMAStrategy(bt.Strategy):
     params = (
@@ -201,16 +203,20 @@ if __name__ == "__main__":
     # )
 
     data = bt.feeds.GenericCSVData(
-        dataname="C:\\Users\\kenne\\Pictures\\All\\python\\forex\\Forex-Trading-Algo2\\Backtest\\DAT_XLSX_USDJPY_M1_2020.csv",  # Replace with the actual file path
+        dataname="DAT_XLSX_USDJPY_M1_2020.csv",  # Replace with the actual file path
         fromdate=datetime.datetime(2020, 1, 1),
-        todate=datetime.datetime(2020, 2, 1),
+        todate=datetime.datetime(2020, 8, 5),
         dtformat=('%Y-%m-%d %H:%M'),
         datetime=0,
         openinterest=-1
     )
 
     cerebro.adddata(data)
-    cerebro.addstrategy(IchimokuStrategy)
+    cerebro.addstrategy(MovingAverageRibbonStrategy)
+
+    cerebro.broker.set_cash(100000)
+    cerebro.broker.setcommission(commission=0.001)
+
     cerebro.run()
     cerebro.plot()
 

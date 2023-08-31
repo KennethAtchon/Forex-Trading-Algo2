@@ -230,8 +230,10 @@ instruments = ["USD_JPY", "EUR_USD", "EUR_JPY", "AUD_JPY", "USD_CAD", "GBP_USD",
     "USD_ZAR", "USD_CNH", "USD_HUF", "USD_PLN",
     "USD_INR", "USD_THB", "USD_IDR", "USD_MYR"]
 
+instrumentIndex = 0
+
 # take profit pips [0] = JPY , [1] = other pairs
-takeprofitpips = [0.20, 0.0005]
+takeprofitpips = [0.20, 0.0010]
 
 # stop loss pips [0] = JPY, [1] = other pairs
 stoplosspips = [0.10, 0.0005]
@@ -241,13 +243,13 @@ roundnum = [2,5]
 
 pairpips = {'JPY': 0, 'USD': 1}
 
-period = 50
-
+period = 52
 
 while(True):
+    instrument = instruments[instrumentIndex % 5]
+    print(instrument + " index: " + str(instrumentIndex))
 
-    instrument = instruments[0]
-    
+    currentpair = ""
     if 'JPY' in instrument:
         currentpair = "JPY"
     else:
@@ -256,57 +258,65 @@ while(True):
     positions = oanda.getPositionPair(instrument)
 
     # checks if there is alr a trade
-    if not positions['positions'] or positions['positions'][0]['instrument'] != instrument:
+    if positions['position']['long']['units'] == '0' and positions['position']['short']['units'] == '0':
         
-        print("Get in there beelzebob")
+        print("Opening a position")
         #15m is timeframe of ma
         candles = oanda.getCandles("M15", period ,instrument)
+
+        high_values = [float(candle['mid']['h']) for candle in candles['candles']]  # List of high values for each candle
+        low_values = [float(candle['mid']['l']) for candle in candles['candles']]   # List of low values for each candle
+        close_values = [float(candle['mid']['c']) for candle in candles['candles']] # List of close values for each candle
 
         shortma = simplemovingaverage(10, candles)
         mediumma = simplemovingaverage(20, candles)
         longma = simplemovingaverage(50, candles)
 
-
-
+        signal = "Hold"
 
         if shortma > mediumma > longma:
-            
-            buyorder = oanda.placeBuyOrder(instrument, 50000, -1,-1)
+            signal = "Buy"
+        elif  shortma < mediumma < longma:
+            signal = "Short"
+
+        if signal == "Buy":
+            buyorder = oanda.placeBuyOrder(instrument, 100000, -1,-1)
             buyprice = float(buyorder['orderFillTransaction']['price'])
             buytradeid = buyorder['orderFillTransaction']['tradeOpened']['tradeID']
             
+
             takeprofit = buyprice + takeprofitpips[pairpips[currentpair]]
             stoploss = buyprice - stoplosspips[pairpips[currentpair]]
 
             takeprofit = round(takeprofit, roundnum[pairpips[currentpair]])
             stoploss = round(stoploss, roundnum[pairpips[currentpair]])
 
+
             oanda.placetpOrsl(takeprofit , "TAKE_PROFIT", buytradeid)
             oanda.placetpOrsl(stoploss, "STOP_LOSS", buytradeid)
 
-        elif shortma < mediumma < longma:
-
-            sellorder = oanda.placeSellOrder(instrument, 50000, -1, -1)
+        elif signal == "Sell":
+            sellorder = oanda.placeSellOrder(instrument, 100000, -1, -1)
             sellprice = float(sellorder['orderFillTransaction']['price'])
             selltradeid = sellorder['orderFillTransaction']['tradeOpened']['tradeID']
 
+            
             takeprofit = sellprice - takeprofitpips[pairpips[currentpair]]
             stoploss = sellprice + stoplosspips[pairpips[currentpair]]
 
             takeprofit = round(takeprofit, roundnum[pairpips[currentpair]])
             stoploss = round(stoploss, roundnum[pairpips[currentpair]])
             
-            
             oanda.placetpOrsl(takeprofit , "TAKE_PROFIT", selltradeid)
             oanda.placetpOrsl(stoploss, "STOP_LOSS", selltradeid)
 
 
-
+        instrumentIndex += 1
         time.sleep(10)
 
     else:
 
         print("positions is full waiting to reopen")
+        instrumentIndex += 1
         time.sleep(60)
-
 

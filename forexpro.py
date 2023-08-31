@@ -4,45 +4,16 @@ import os
 import time
 from dotenv import load_dotenv
 
-def calculate_ichimoku_senkou_spans(high_values, low_values):
-    # Calculate Tenkan-sen (Conversion Line)
-    highest_high = max(high_values[-9:])
-    lowest_low = min(low_values[-9:])
-    tenkan_sen = (highest_high + lowest_low) / 2
+def simplemovingaverage(length, candles):
+    total = 0
+    for i in range(length):
+        holder = float(candles['candles'][i]['mid']['c'])
+        total += holder
+    result = total / length
+    result = round(result, 5)
+    return result
+    
 
-    # Calculate Kijun-sen (Base Line)
-    highest_high = max(high_values[-26:])
-    lowest_low = min(low_values[-26:])
-    kijun_sen = (highest_high + lowest_low) / 2
-
-    # Calculate Senkou Span A (Leading Span A)
-    senkou_span_a = (tenkan_sen + kijun_sen) / 2
-
-    # Calculate Senkou Span B (Leading Span B)
-    highest_high = max(high_values[-52:])
-    lowest_low = min(low_values[-52:])
-    senkou_span_b = (highest_high + lowest_low) / 2
-
-    return senkou_span_a, senkou_span_b
-
-def ichimoku_strategy(data_close, senkou_span_a, senkou_span_b):
-    current_close = data_close[-1]
-    current_senkou_span_a = senkou_span_a
-    current_senkou_span_b = senkou_span_b
-
-    # Condition for buy signal
-    if (current_close > current_senkou_span_a and
-        current_close > current_senkou_span_b):
-        return "Buy"
-
-    # Condition for sell signal
-    elif (current_close < current_senkou_span_a or
-          current_close < current_senkou_span_b):
-        return "Sell"
-
-    # No trade signal
-    else:
-        return "Hold"
 
 load_dotenv()
 
@@ -251,7 +222,7 @@ oanda.setCurrentAccount('101-001-24797201-001')
 
 # what pair are you trading 
 instruments = ["USD_JPY", "EUR_USD", "EUR_JPY", "GBP_USD", "USD_CAD"]
-instrumentIndex = 5
+instrumentIndex = 0
 
 # take profit pips [0] = JPY , [1] = other pairs
 takeprofitpips = [0.20, 0.0010]
@@ -289,12 +260,18 @@ while(True):
         low_values = [float(candle['mid']['l']) for candle in candles['candles']]   # List of low values for each candle
         close_values = [float(candle['mid']['c']) for candle in candles['candles']] # List of close values for each candle
 
-        span_a, span_b = calculate_ichimoku_senkou_spans(high_values, low_values)
-        print("Senkou Span A:", span_a)
-        print("Senkou Span B:", span_b)
+        shortma = simplemovingaverage(10, candles)
+        mediumma = simplemovingaverage(20, candles)
+        longma = simplemovingaverage(50, candles)
 
-        signal = ichimoku_strategy(close_values, span_a, span_b)
-        print("Signal:", signal)
+        signal = "Hold"
+
+        if shortma > mediumma > longma:
+            signal = "Buy"
+        elif  shortma < mediumma < longma:
+            signal = "Short"
+
+        
                 
 
 

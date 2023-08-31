@@ -266,7 +266,7 @@ instruments = ["USD_JPY", "EUR_USD", "EUR_JPY", "AUD_JPY", "USD_CAD", "GBP_USD",
     "USD_ZAR", "USD_CNH", "USD_HUF", "USD_PLN",
     "USD_INR", "USD_THB", "USD_IDR", "USD_MYR"]
 
-instrumentIndex = 5
+instrumentIndex = 0
 
 
 # take profit pips [0] = JPY , [1] = other pairs
